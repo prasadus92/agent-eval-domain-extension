@@ -1,0 +1,1088 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Extending tau-bench into Food Delivery</title>
+<meta name="author" content="Prasad Subrahmanya" />
+<style>
+:root {
+  --ink: #0d1117;
+  --ink-2: #2d3748;
+  --ink-3: #4a5568;
+  --ink-4: #718096;
+  --rule: #cbd5e0;
+  --rule-light: #e6ecf2;
+  --rule-faint: #f1f5f9;
+  --bg: #fcfcfc;
+  --paper: #ffffff;
+  --accent: #15396b;
+  --accent-bg: #eef2f8;
+  --hi: #b91c1c;
+  --hi-bg: #fef2f2;
+  --md: #b45309;
+  --md-bg: #fffbeb;
+  --lo: #166534;
+  --lo-bg: #f0fdf4;
+  --code-bg: #f7f9fb;
+  --code-comment: #718096;
+  --code-keyword: #15396b;
+  --code-string: #166534;
+}
+
+@page { size: 297mm 210mm; margin: 0; }
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv11", "tnum";
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.deck { display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 24px 0 80px; }
+
+.slide {
+  width: 297mm; height: 210mm;
+  background: var(--paper);
+  padding: 14mm 20mm 14mm 20mm;
+  position: relative; overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(13,17,23,0.06);
+  page-break-after: always; break-after: page;
+  display: flex; flex-direction: column;
+}
+
+@media print { body { background: white; } .deck { padding: 0; gap: 0; } .slide { box-shadow: none; margin: 0; } .nav { display: none !important; } }
+body.print-mode .nav { display: none !important; }
+
+/* HEAD */
+.head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  border-bottom: 1px solid var(--rule-light);
+  padding-bottom: 3mm; margin-bottom: 5mm;
+}
+.head .kicker {
+  font-size: 8.5pt; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-4); font-weight: 600;
+}
+.head .pagenum {
+  font-size: 9pt; color: var(--ink-4); font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.head .pagenum span { color: var(--rule); }
+
+/* TITLES */
+h1.action {
+  font-size: 19pt; font-weight: 600; line-height: 1.2;
+  letter-spacing: -0.014em;
+  margin: 0 0 6mm 0; color: var(--ink);
+  max-width: 250mm;
+}
+h1.action em { font-style: normal; color: var(--accent); }
+
+h1.cover-title {
+  font-size: 42pt; font-weight: 700; line-height: 1.05;
+  letter-spacing: -0.025em; margin: 0 0 8mm 0;
+}
+p.cover-lead {
+  font-size: 14pt; line-height: 1.4; color: var(--ink-2);
+  margin: 0; max-width: 200mm; font-weight: 400;
+}
+
+/* BODY */
+p.lead {
+  font-size: 12.5pt; line-height: 1.45; color: var(--ink-2);
+  margin: 0 0 5mm 0; max-width: 250mm;
+}
+h3.subhead {
+  font-size: 11.5pt; font-weight: 600; margin: 0 0 3mm 0;
+  color: var(--ink); letter-spacing: -0.01em;
+}
+p, li { font-size: 11pt; line-height: 1.45; color: var(--ink-2); margin: 0 0 1.8mm 0; }
+
+ul.bullets { list-style: none; padding-left: 0; margin: 0; }
+ul.bullets li { position: relative; padding-left: 6mm; margin-bottom: 2.4mm; }
+ul.bullets li::before {
+  content: ""; position: absolute; left: 0; top: 7pt;
+  width: 3.5mm; height: 1px; background: var(--accent);
+}
+
+/* CARDS */
+.cards { display: grid; gap: 4mm; }
+.cards.cols-2 { grid-template-columns: 1fr 1fr; }
+.cards.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.cards.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+.card {
+  border: 1px solid var(--rule-light);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px; padding: 3.5mm 4.5mm; background: #fdfdfd;
+}
+.card .label {
+  font-size: 8pt; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink-4); font-weight: 600; margin-bottom: 1.5mm;
+}
+.card .name {
+  font-size: 11.5pt; font-weight: 600; color: var(--ink);
+  margin: 0 0 1.5mm 0; letter-spacing: -0.01em; line-height: 1.3;
+}
+.card p { font-size: 10pt; line-height: 1.4; margin: 0 0 1mm 0; }
+
+/* TABLES */
+table {
+  width: 100%; border-collapse: collapse;
+  font-size: 10.5pt; margin: 1mm 0;
+}
+th {
+  text-align: left; font-weight: 600; font-size: 8.5pt;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-4);
+  border-bottom: 1.5px solid var(--ink); padding: 1.5mm 3mm 1.5mm 0;
+  vertical-align: bottom;
+}
+td {
+  padding: 1.6mm 3mm 1.6mm 0; border-bottom: 1px solid var(--rule-light);
+  color: var(--ink-2); vertical-align: top; line-height: 1.4;
+}
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; padding-right: 0; }
+td strong { color: var(--ink); font-weight: 600; }
+tr.total td { border-top: 1.5px solid var(--ink); border-bottom: none; font-weight: 600; color: var(--ink); padding-top: 2.2mm; }
+tr.subtotal td { font-weight: 500; color: var(--ink); }
+
+/* SOURCE */
+.source {
+  position: absolute; bottom: 7mm; left: 20mm; right: 20mm;
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 7.5pt; color: var(--ink-4);
+  border-top: 1px solid var(--rule-light); padding-top: 2mm;
+  letter-spacing: 0.02em;
+}
+.source code {
+  font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+  font-size: 7pt; color: var(--ink-3);
+  background: var(--rule-faint); padding: 0.3mm 1mm; border-radius: 1.5px;
+}
+
+/* INLINE */
+code, .code {
+  font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+  font-size: 9.5pt; color: var(--accent);
+  background: var(--accent-bg); padding: 0.4mm 1.4mm; border-radius: 2px;
+}
+em.takeaway { font-style: normal; color: var(--accent); font-weight: 600; }
+
+.callout {
+  background: var(--accent-bg); padding: 3mm 4mm;
+  border-radius: 2px; margin: 1mm 0; font-size: 10.5pt; color: var(--ink);
+}
+.callout strong { color: var(--accent); }
+
+/* COVER META */
+.cover-meta {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  border-top: 1px solid var(--rule-light); padding-top: 4mm; margin-top: 4mm;
+  font-size: 10pt; color: var(--ink-3);
+  letter-spacing: 0.02em;
+}
+.cover-meta .author { color: var(--ink); font-weight: 500; font-size: 11pt; }
+
+/* SPLIT */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; flex: 1; min-height: 0; }
+.split.weighted-l { grid-template-columns: 1.15fr 1fr; }
+.split.weighted-r { grid-template-columns: 1fr 1.15fr; }
+
+/* S-C-A */
+.sca { display: flex; flex-direction: column; gap: 4mm; margin-top: 2mm; }
+.sca .pt {
+  display: grid; grid-template-columns: 28mm 1fr;
+  gap: 6mm; align-items: baseline;
+  padding: 4mm 0; border-top: 1px solid var(--rule-light);
+}
+.sca .pt:first-child { border-top: none; padding-top: 1mm; }
+.sca .pt .lbl {
+  font-size: 8pt; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent); font-weight: 600;
+}
+.sca .pt .body { font-size: 11.5pt; line-height: 1.45; color: var(--ink); }
+.sca .pt .body strong { font-weight: 600; }
+.sca .pt .body .ev {
+  display: block; font-size: 10pt; color: var(--ink-3);
+  margin-top: 1.5mm; line-height: 1.45;
+}
+
+/* DIVERGENCE */
+.divergence-table th { font-size: 8.5pt; }
+.divergence-table td { padding: 1.4mm 3mm 1.4mm 0; font-size: 9.8pt; line-height: 1.4; }
+.divergence-table .accent-col { color: var(--ink); font-weight: 500; }
+
+/* BUCKETS */
+.bucket-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2mm; }
+.bucket-tile {
+  border: 1px solid var(--rule-light); padding: 2.5mm 3mm; border-radius: 3px;
+  font-size: 9pt; line-height: 1.35; background: white;
+  display: flex; flex-direction: column; gap: 0.8mm;
+}
+.bucket-tile .num { font-size: 8pt; font-weight: 700; color: var(--ink-4); letter-spacing: 0.04em; }
+.bucket-tile .name { font-size: 10pt; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; line-height: 1.25; }
+.bucket-tile.high { border-left: 3px solid var(--hi); background: linear-gradient(90deg, var(--hi-bg) 0%, white 30%); }
+.bucket-tile.med  { border-left: 3px solid var(--md); }
+.bucket-tile.low  { border-left: 3px solid var(--lo); }
+
+/* TIMELINE */
+.timeline {
+  display: grid;
+  grid-template-columns: 2fr 2fr 4fr 4fr 2fr 2fr;
+  margin: 2mm 0;
+  border: 1px solid var(--rule-light); border-radius: 3px; overflow: hidden;
+}
+.timeline-phase {
+  padding: 3mm 3.5mm 3mm 3.5mm;
+  border-right: 1px solid var(--rule-light); font-size: 9pt;
+  background: white;
+}
+.timeline-phase:last-child { border-right: none; }
+.timeline-phase.shipping { background: var(--accent-bg); }
+.timeline-phase .week { font-size: 7.5pt; font-weight: 700; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 1mm; }
+.timeline-phase .label { font-size: 10pt; font-weight: 600; color: var(--ink); margin-bottom: 1.5mm; letter-spacing: -0.01em; line-height: 1.2; }
+.timeline-phase ul.bullets li::before { width: 2.4mm; }
+.timeline-phase ul.bullets li {
+  padding-left: 4mm; margin-bottom: 0.6mm;
+  font-size: 8.5pt; line-height: 1.32; color: var(--ink-2);
+}
+
+/* PYRAMID */
+.pyramid { display: flex; flex-direction: column; gap: 1.5mm; }
+.tier {
+  display: grid; grid-template-columns: 16mm 1fr 22mm 18mm; gap: 4mm;
+  padding: 2.4mm 4mm; border: 1px solid var(--rule-light);
+  border-radius: 2px; align-items: center; font-size: 9.5pt;
+  background: white;
+}
+.tier.fte { background: var(--accent-bg); border-color: var(--accent); }
+.tier .tname { font-weight: 600; color: var(--ink); font-size: 10pt; }
+.tier .role { color: var(--ink-2); line-height: 1.32; font-size: 9.5pt; }
+.tier .rate, .tier .count { font-variant-numeric: tabular-nums; font-weight: 500; color: var(--ink); text-align: right; font-size: 9.5pt; }
+
+/* KPI */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm; margin: 4mm 0 2mm 0; }
+.kpi { padding: 3.5mm 4.5mm; background: var(--accent-bg); border-radius: 3px; }
+.kpi .lbl { font-size: 7.5pt; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.2mm; }
+.kpi .val { font-size: 22pt; font-weight: 700; color: var(--ink); line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.kpi .val .unit { font-size: 11pt; color: var(--ink-4); font-weight: 400; margin-left: 1.5mm; }
+.kpi .sub { font-size: 8.5pt; color: var(--ink-3); margin-top: 1.5mm; line-height: 1.32; }
+
+/* RISKS */
+table.risks td { padding: 1.3mm 3mm 1.3mm 0; line-height: 1.35; }
+table.risks tr.spot td { background: var(--accent-bg); font-weight: 500; border-bottom-color: var(--accent); }
+table.risks tr.spot td:first-child { color: var(--ink); font-weight: 600; }
+table.risks tr.spot td:first-child::before {
+  content: "▲ "; color: var(--accent); font-size: 9pt; margin-right: 1mm;
+}
+
+/* DARK CALLOUT */
+.darkbox { background: var(--ink); color: white; padding: 3mm 4mm; border-radius: 2px; margin-top: 2mm; }
+.darkbox strong { color: white; font-size: 11pt; }
+.darkbox span { color: #c8d3e0; font-size: 10pt; }
+
+/* NAV */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: rgba(255,255,255,0.96); backdrop-filter: saturate(140%) blur(8px);
+  border-bottom: 1px solid var(--rule-light); padding: 8px 16px; font-size: 10pt;
+  display: flex; gap: 16px; align-items: center; z-index: 999;
+}
+.nav a { color: var(--ink-4); text-decoration: none; }
+.nav a:hover { color: var(--accent); }
+.nav .name { font-weight: 600; color: var(--ink); margin-right: auto; }
+.nav .print { background: var(--ink); color: white; padding: 4px 12px; border-radius: 3px; font-weight: 500; border: none; cursor: pointer; font-family: inherit; font-size: inherit; }
+
+/* CHARTS */
+.chart-block { border-top: 1px solid var(--rule-light); padding-top: 3mm; margin-top: 3mm; }
+.chart-title { font-size: 9pt; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 2mm; }
+.chart-note { font-size: 8.5pt; color: var(--ink-4); margin-top: 1.5mm; font-style: italic; }
+
+/* CODE BLOCKS */
+pre.code-block {
+  font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+  font-size: 8.2pt; line-height: 1.45;
+  background: var(--code-bg);
+  border: 1px solid var(--rule-light);
+  border-left: 3px solid var(--accent);
+  border-radius: 2px;
+  padding: 3mm 3.5mm;
+  margin: 0 0 3mm 0;
+  color: var(--ink-2);
+  overflow: hidden;
+  white-space: pre;
+}
+pre.code-block .cmt { color: var(--code-comment); font-style: italic; }
+pre.code-block .kw  { color: var(--code-keyword); font-weight: 600; }
+pre.code-block .str { color: var(--code-string); }
+pre.code-block .file {
+  display: block;
+  font-size: 7.5pt;
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-bottom: 2mm;
+  font-family: "Inter", sans-serif;
+  text-transform: lowercase;
+}
+.code-annot {
+  font-size: 9.5pt; color: var(--ink-3); line-height: 1.4;
+  margin: 0 0 3mm 0;
+}
+.code-annot strong { color: var(--ink); font-weight: 600; }
+
+/* COMPETITOR TABLE */
+table.compete { font-size: 9.5pt; }
+table.compete th { font-size: 8pt; }
+table.compete td { padding: 2mm 3mm 2mm 0; vertical-align: top; line-height: 1.4; }
+table.compete tr.us td { background: var(--accent-bg); font-weight: 500; }
+table.compete tr.us td:first-child { color: var(--ink); font-weight: 600; }
+
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <span class="name">Food Delivery tau-bench extension</span>
+  <a href="#s1">1</a><a href="#s2">2</a><a href="#s3">3</a><a href="#s4">4</a><a href="#s5">5</a>
+  <a href="#s6">6</a><a href="#s7">7</a><a href="#s8">8</a><a href="#s9">9</a><a href="#s10">10</a>
+  <a href="#s11">11</a><a href="#s12">12</a>
+  <button onclick="window.print()" class="print">Print → PDF</button>
+</nav>
+
+<div class="deck">
+
+<!-- S1 COVER -->
+<section class="slide" id="s1">
+  <div class="head">
+    <span class="kicker">Technical & operational design</span>
+    <span class="pagenum">April 2026</span>
+  </div>
+
+  <div style="margin: auto 0;">
+    <h1 class="cover-title">Extending τ³-bench<br/>into Food Delivery</h1>
+    <p class="cover-lead">
+      A technical and operational design for the first domain in a portfolio that compounds across two-sided marketplaces.
+    </p>
+  </div>
+
+  <div class="cover-meta">
+    <span class="author">Prasad Subrahmanya</span>
+    <span>12 slides, methodology and 7 supporting artefacts</span>
+  </div>
+</section>
+
+<!-- S2 TL;DR -->
+<section class="slide" id="s2">
+  <div class="head">
+    <span class="kicker">Executive summary</span>
+    <span class="pagenum">02 <span>/ 12</span></span>
+  </div>
+
+  <h1 class="action">
+    Food Delivery v1 in <em>16 weeks, ~3,200 RL-ready trajectories</em>; the same infrastructure ships domain&nbsp;2 in 8 weeks.
+  </h1>
+
+  <div class="sca">
+    <div class="pt">
+      <span class="lbl">Situation</span>
+      <span class="body">
+        Published tau-bench-extension programs already cover domains like Manufacturing, with E-commerce, Hotel, Insurance, Digital Wallet, and Consulting in progress across the field. This design targets Food Delivery as the first of several new domains for a frontier lab consuming the data.
+        <span class="ev">The brief points to v1 of tau-bench, which the repo's own README flags as deprecated and redirects to τ³-bench. We extend τ³-bench (current).</span>
+      </span>
+    </div>
+    <div class="pt">
+      <span class="lbl">Complication</span>
+      <span class="body">
+        The brief asks for RL training data. Most published tau-bench extensions, including the published Manufacturing release, are <strong>eval-shaped</strong>: ~50 hand-crafted tasks scored 0/1 by strict DB-hash equality. <strong>RL-shaped</strong> data needs verifier-based dense reward and broader bucket coverage; AReaL-SEA showed the payoff, lifting Pass^1 from baseline ~50% to 75% (retail) and 98% (telecom) on tau²-bench-style tasks via per-instance verifiers.
+        <span class="ev">Eight retail and airline assumptions break in food delivery (multi-party, real-time, stochastic, allergen safety, two-sided marketplace, monetary identity). Four reward-shape failures follow from those breaks.</span>
+      </span>
+    </div>
+    <div class="pt">
+      <span class="lbl">Answer</span>
+      <span class="body">
+        Three moves deliver v1 and the playbook: (1) plug a τ³-shaped Food Delivery domain into Sierra's architecture; (2) layer four targeted reward upgrades that turn binary outcomes into dense RL signal; (3) extract reusable infrastructure so domain&nbsp;2 lands in 8 weeks.
+        <span class="ev">12 capability buckets, weekly slices from week 4, 4 FTE core plus tiered contractor pyramid (~85 active at peak), 50% of v1 infra reused on domain 2 and rising to ~65% by domain 3.</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="source">
+    <span>Sources: github.com/sierra-research/tau2-bench, arXiv:2406.12045, arXiv:2506.07982, </span>
+    <span>02 / 12</span>
+  </div>
+</section>
+
+<!-- S3 CHASSIS -->
+<section class="slide" id="s3">
+  <div class="head">
+    <span class="kicker">What we extend, not invent</span>
+    <span class="pagenum">03 <span>/ 12</span></span>
+  </div>
+
+  <h1 class="action">
+    We build on <em>two existing chasses</em>, Sierra's τ³-bench architecture and the published RL-gym methodology, and position Food Delivery within the broader agentic benchmark landscape.
+  </h1>
+
+  <div class="split" style="margin-top: 2mm;">
+    <div>
+      <h3 class="subhead">Sierra τ³-bench (the architecture)</h3>
+      <p style="font-size:10pt;color:var(--ink-3);margin-bottom:3mm;">
+        Brief points to v1 (<code>sierra-research/tau-bench</code>); v1's README redirects to τ³-bench (<code>sierra-research/tau2-bench</code>).
+      </p>
+      <ul class="bullets">
+        <li><strong>Domain contract.</strong> Four Python files plus four data files plug a new domain into the eval and RL framework. Submittable to taubench.com.</li>
+        <li><strong>Gymnasium RL interface</strong> via <code>uv sync --extra gym</code>. Drops directly into RL training pipelines.</li>
+        <li><strong>Compositional task generator</strong> from τ²-bench. Verifiable task synthesis at scale via atomic action primitives.</li>
+        <li><strong>Dual-control (Dec-POMDP).</strong> Both agent and user have tools. Food delivery has 4 actors; we extend to multi-actor.</li>
+        <li><strong>75+ task fixes</strong> from the SABER paper (Cuadron et al., ICLR 2026).</li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="subhead">RL-gym methodology (from public sources)</h3>
+      <p style="font-size:10pt;color:var(--ink-3);margin-bottom:3mm;">
+        Public framing on  and the tau-bench-extension blog. We adopt the same vocabulary.
+      </p>
+      <ul class="bullets">
+        <li><strong>~50% pass-rate calibration target</strong> for "Tau-style RL-gyms." We hit it via difficulty stratification.</li>
+        <li><strong>Three-strategy QA</strong>: human-in-the-loop review, multi-layered validation, collaborative evolution.</li>
+        <li><strong>"Can your AI say no?"</strong> framing for policy-aware agents. Bucket 7 is built around it.</li>
+        <li><strong>Failure taxonomy</strong>: tool execution, data grounding, reasoning. Drives our auto-error-identification.</li>
+        <li><strong>Existing program slot.</strong> Manufacturing live; E-commerce, Hotel, Insurance, Digital Wallet, Consulting in development. Food Delivery slots in, does not replace.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top: 3mm; font-size: 10pt;">
+    <strong>Where Food Delivery sits in the landscape.</strong> SWE-bench Verified (500 tasks, top frontier model ~93% Pass^1) tests coding agents. AgentBench (8 environments, 29 LLMs) tests general capability. Mind2Web 2 (130 tasks, 1,000+ human-hours) and WebArena (812 tasks) test browser agents. GAIA (466 tasks) tests assistant-style reasoning. OSWorld (369 tasks, humans 72% vs best model 12%) tests OS agents. Tau-bench's lane is multi-turn tool use under domain policy with a simulated user. Food Delivery sits in that lane and adds marketplace primitives the others do not exercise.
+  </div>
+
+  <div class="source">
+    <span>Sources: github.com/sierra-research/tau2-bench (current), arXiv:2506.07982, arXiv:2308.03688 (AgentBench), swebench.com</span>
+    <span>03 / 12</span>
+  </div>
+</section>
+
+<!-- S4 DOMAIN DIVERGENCE -->
+<section class="slide" id="s4">
+  <div class="head">
+    <span class="kicker">Domain analysis</span>
+    <span class="pagenum">04 <span>/ 12</span></span>
+  </div>
+
+  <h1 class="action">
+    Food delivery breaks <em>eight retail and airline assumptions</em>. Each break adds a new env, tool, or reward primitive we build.
+  </h1>
+
+  <table class="divergence-table">
+    <thead>
+      <tr>
+        <th style="width: 23%;">τ³ existing pattern</th>
+        <th style="width: 36%;">Food delivery reality</th>
+        <th style="width: 41%;">New mechanism we build</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>2-party (customer, agent)</td><td class="accent-col">4-party: customer, restaurant, driver, support</td><td>Multi-actor user-simulator, <code>user_tools.py</code> per role</td></tr>
+      <tr><td>Static DB</td><td class="accent-col">Real-time temporal state, order being prepped, driver moving, surge changing</td><td>Time-stepped env, <code>_env_clock_minutes</code> advances on each turn</td></tr>
+      <tr><td>Fully observable items / inventory</td><td class="accent-col">Partial observability, ETA distribution, hidden kitchen capacity</td><td>Stochastic transitions, ETA distributions in <code>track_order_eta</code></td></tr>
+      <tr><td>Deterministic outcomes</td><td class="accent-col">Stochastic, driver reassigned, restaurant rejects, item OOS mid-prep</td><td><strong>Equivalence-class hashing</strong> (any driver in candidate set counts as correct)</td></tr>
+      <tr><td>One-shot resolution</td><td class="accent-col">Live recovery, food cannot be re-delivered, only refunded, replaced, credited</td><td>Multi-step recovery rubric, process reward checkpoints fire mid-trajectory</td></tr>
+      <tr><td>Identity = lookup</td><td class="accent-col">Geofencing, address fuzz, dietary flags, allergens, group orders</td><td><strong>Safety-gate hard rules</strong> (allergen violation hard-zeros episode)</td></tr>
+      <tr><td>Single-DB state</td><td class="accent-col">Two-sided marketplace, restaurant capacity AND driver supply both constrained</td><td>Marketplace mechanics: surge curves, capacity tables, payout ledger</td></tr>
+      <tr><td>Refunds = monetary delta</td><td class="accent-col">Refund × credit × replacement × payout reversal, many valid resolutions</td><td><strong>Monetary-identity invariant</strong>, sum must equal disputed amount</td></tr>
+    </tbody>
+  </table>
+
+  <p class="lead" style="margin-top: 4mm; font-size: 10.5pt;">
+    These same patterns generalise to ride-share, last-mile logistics, healthcare scheduling, B2B procurement, field service. <em class="takeaway">That makes Food Delivery the right unit-1 domain.</em>
+  </p>
+
+  <div class="source">
+    <span>Source: source-code analysis of <code>tau_bench/envs/{retail,airline}/</code> in github.com/sierra-research/tau-bench, cross-checked against τ³-bench domain README</span>
+    <span>04 / 12</span>
+  </div>
+</section>
+
+<!-- S5 ARCHITECTURE IN CODE -->
+<section class="slide" id="s5">
+  <div class="head">
+    <span class="kicker">Architecture in code · the three contracts a domain must satisfy</span>
+    <span class="pagenum">05 <span>/ 12</span></span>
+  </div>
+
+  <h1 class="action">
+    The architecture is small and orthogonal. A new domain plugs in via <em>three contracts</em>: typed Action and Task models, a Tool ABC, and an env that hashes DB state for reward.
+  </h1>
+
+  <div class="split">
+    <div>
+<pre class="code-block"><span class="file">tau_bench/types.py</span><span class="kw">class</span> Action(BaseModel):
+    name:   str
+    kwargs: Dict[str, Any]
+
+<span class="kw">class</span> Task(BaseModel):
+    user_id:     str
+    actions:     List[Action]   <span class="cmt"># GT replay sequence</span>
+    instruction: str            <span class="cmt"># persona for user-sim</span>
+    outputs:     List[str]      <span class="cmt"># substring assertions</span></pre>
+
+<pre class="code-block"><span class="file">tau_bench/envs/tool.py</span><span class="kw">class</span> Tool(abc.ABC):
+    @staticmethod
+    <span class="kw">def</span> invoke(*args, **kwargs) -> str:
+        <span class="kw">raise</span> NotImplementedError
+
+    @staticmethod
+    <span class="kw">def</span> get_info() -> dict:   <span class="cmt"># OpenAI fn-calling JSON</span>
+        <span class="kw">raise</span> NotImplementedError</pre>
+
+<pre class="code-block"><span class="file">tau_bench/envs/base.py, calculate_reward (excerpt)</span>data_hash    = self.get_data_hash()
+self.data    = self.data_load_func()       <span class="cmt"># fresh DB</span>
+<span class="kw">for</span> action <span class="kw">in</span> self.task.actions:           <span class="cmt"># replay GT</span>
+    self.step(action)
+gt_data_hash = self.get_data_hash()
+reward       = <span class="str">1.0</span> <span class="kw">if</span> data_hash == gt_data_hash <span class="kw">else</span> <span class="str">0.0</span></pre>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:4mm;">
+      <h3 class="subhead">What this means for our build</h3>
+
+      <div class="code-annot">
+        <strong>Typed actions, in-place mutation.</strong>
+        Tools mutate <code>data</code> dict in place; that mutation is what reward hashes after the trajectory ends. Our Food Delivery domain ships 24 agent tools and 12 user tools (3 personas × 4 each) following the same ABC.
+      </div>
+
+      <div class="code-annot">
+        <strong>Reward = strict hash equality.</strong>
+        SHA-256 of the agent's final DB state must equal the hash after replaying ground-truth actions. Strict 0/1, no partial credit, no tolerance for stochastic outcomes, no safety constraints. Fine for eval, wrong shape for RL training.
+      </div>
+
+      <div class="code-annot">
+        <strong>Where our four reward upgrades attach.</strong>
+        We extend <code>calculate_reward()</code> with: (1) canonical hashing on equivalence-class fields (handles stochastic driver assignment); (2) safety-gate predicate (hard-zeros allergen violations); (3) monetary-identity check (accepts any valid refund / credit / replacement combination summing to the disputed amount); (4) per-checkpoint process reward (dense RL signal).
+      </div>
+
+      <div class="callout" style="margin-top:auto;font-size:10pt;">
+        <strong>Backwards-compatible.</strong> Tasks without <code>reward_overrides</code> reduce to base τ³ reward. Existing retail and airline leaderboards still work; food delivery and future domains layer their overrides per task.
+      </div>
+    </div>
+  </div>
+
+  <div class="source">
+    <span>Code excerpts from <code>tau_bench/types.py</code>, <code>envs/tool.py</code>, <code>envs/base.py</code> (lines 287 to 332), Sierra Research, MIT licence; annotations are mine</span>
+    <span>05 / 12</span>
+  </div>
+</section>
+
+<!-- S6 DECISION TREE -->
+<section class="slide" id="s6">
+  <div class="head">
+    <span class="kicker">Capability decision tree · gap-driven investment</span>
+    <span class="pagenum">06 <span>/ 12</span></span>
+  </div>
+
+  <h1 class="action">
+    <em>Six of twelve buckets</em> carry ~80% of expected reward gap. Hand-crafted depth goes there; compositional generation covers the rest.
+  </h1>
+
+  <p class="lead" style="font-size: 10.5pt; margin-bottom: 3mm;">
+    Bucket the capability surface. Run consuming-lab model on a 50-task probe in W1. Compute Pass^1 and Pass^4 per bucket. Concentrate hand-crafted investment where reward gap × business value is largest. Six buckets pass that filter.
+  </p>
+
+  <div class="bucket-grid">
+    <div class="bucket-tile low"><span class="num">01</span><span class="name">Order placement</span><span>browse, cart, ETA quote</span></div>
+    <div class="bucket-tile med"><span class="num">02</span><span class="name">Order modification</span><span>add/remove, swap, special instructions</span></div>
+    <div class="bucket-tile high"><span class="num">03</span><span class="name">Cancellation &amp; refund</span><span>state × initiator × eligibility</span></div>
+    <div class="bucket-tile high"><span class="num">04</span><span class="name">Substitution &amp; OOS</span><span>stochastic event, consent, safety</span></div>
+
+    <div class="bucket-tile high"><span class="num">05</span><span class="name">Driver coordination</span><span>re-route, contact, missing, reassign</span></div>
+    <div class="bucket-tile high"><span class="num">06</span><span class="name">Restaurant coordination</span><span>prep delay, capacity, rejection</span></div>
+    <div class="bucket-tile high"><span class="num">07</span><span class="name">Compensation</span><span>"Can your AI say no?", policy under pressure</span></div>
+    <div class="bucket-tile med"><span class="num">08</span><span class="name">Delivery exceptions</span><span>wrong addr, damage, contamination</span></div>
+
+    <div class="bucket-tile high"><span class="num">09</span><span class="name">Dietary &amp; allergy</span><span>safety-critical, hard-block</span></div>
+    <div class="bucket-tile med"><span class="num">10</span><span class="name">Group / scheduled / multi-stop</span><span>compositionally complex</span></div>
+    <div class="bucket-tile med"><span class="num">11</span><span class="name">Loyalty, promo, surge</span><span>time-stamped pricing rules</span></div>
+    <div class="bucket-tile med"><span class="num">12</span><span class="name">Fraud, abuse, violation</span><span>adversarial personas, honeypots</span></div>
+  </div>
+
+  <div class="chart-block">
+    <div class="chart-title">Investment allocation, % of 200 hand-crafted tasks per bucket</div>
+    <svg width="100%" height="58" viewBox="0 0 1000 58" preserveAspectRatio="none" style="display:block;">
+      <line x1="0" y1="46" x2="1000" y2="46" stroke="#cbd5e0" stroke-width="0.6"/>
+      <g font-family="Inter" font-size="9" fill="#4a5568">
+        <rect x="0"   y="14" width="30"  height="32" fill="#cbd5e0"/>
+        <rect x="34"  y="14" width="50"  height="32" fill="#fde68a"/>
+        <rect x="88"  y="14" width="110" height="32" fill="#fca5a5"/>
+        <rect x="202" y="14" width="110" height="32" fill="#fca5a5"/>
+        <rect x="316" y="14" width="110" height="32" fill="#fca5a5"/>
+        <rect x="430" y="14" width="110" height="32" fill="#fca5a5"/>
+        <rect x="544" y="14" width="110" height="32" fill="#fca5a5"/>
+        <rect x="658" y="14" width="50"  height="32" fill="#fde68a"/>
+        <rect x="712" y="14" width="110" height="32" fill="#fca5a5"/>
+        <rect x="826" y="14" width="50"  height="32" fill="#fde68a"/>
+        <rect x="880" y="14" width="50"  height="32" fill="#fde68a"/>
+        <rect x="934" y="14" width="50"  height="32" fill="#fde68a"/>
+        <text x="15"  y="56" text-anchor="middle">01</text>
+        <text x="59"  y="56" text-anchor="middle">02</text>
+        <text x="143" y="56" text-anchor="middle">03</text>
+        <text x="257" y="56" text-anchor="middle">04</text>
+        <text x="371" y="56" text-anchor="middle">05</text>
+        <text x="485" y="56" text-anchor="middle">06</text>
+        <text x="599" y="56" text-anchor="middle">07</text>
+        <text x="683" y="56" text-anchor="middle">08</text>
+        <text x="767" y="56" text-anchor="middle">09</text>
+        <text x="851" y="56" text-anchor="middle">10</text>
+        <text x="905" y="56" text-anchor="middle">11</text>
+        <text x="959" y="56" text-anchor="middle">12</text>
+      </g>
+      <line x1="0" y1="10" x2="654" y2="10" stroke="#15396b" stroke-width="1.2" stroke-dasharray="3 2"/>
+      <text x="324" y="8" text-anchor="middle" font-family="Inter" font-size="8.5" font-weight="600" fill="#15396b">~80% of hand-crafted volume across 6 priority buckets</text>
+    </svg>
+    <div class="chart-note">
+      Hypotheses falsified in W1 against the actual consuming-lab model on a 50-task probe set; tree updated by W2.
+    </div>
+  </div>
+
+  <div class="source">
+    <span>L1 and L2 drill-down: <code>artifacts/01_decision_tree.md</code></span>
+    <span>06 / 12</span>
+  </div>
+</section>
+
+<!-- S7 BUILD -->
+<section class="slide" id="s7">
+  <div class="head">
+    <span class="kicker">The build, concretely</span>
+    <span class="pagenum">07 <span>/ 12</span></span>
+  </div>
+
+  <h1 class="action">
+    Same architecture as τ³ retail. <em>30× the task volume.</em> Multi-actor user simulation where retail had two parties.
+  </h1>
+  <!-- Tool breakdown is shown in the comparison table below; calibrated against retail's 16 tools -->
+
+
+  <div class="split">
+    <div>
+      <h3 class="subhead">Domain files, the τ³-bench shape</h3>
+<pre style="font-family:'JetBrains Mono','SF Mono',Menlo,monospace;font-size:8.5pt;color:var(--ink-2);background:#f7f9fb;padding:3.5mm 4mm;border-radius:3px;border:1px solid var(--rule-light);line-height:1.5;margin:0 0 3mm 0;">src/tau2/domains/food_delivery/
+├── data_model.py        <span style="color:var(--ink-4);"># 11 tables, subclass of DB</span>
+├── tools.py             <span style="color:var(--ink-4);"># 24 agent tools (13 read + 7 write + 4 escalation)</span>
+├── environment.py       <span style="color:var(--ink-4);"># env factory + tasks loader</span>
+├── user_data_model.py   <span style="color:var(--ink-4);"># dual-control state</span>
+└── user_tools.py        <span style="color:var(--ink-4);"># 12 tools, 3 personas × 4</span>
+
+data/tau2/domains/food_delivery/
+├── tasks.json           <span style="color:var(--ink-4);"># ~3,200 tasks</span>
+├── split_tasks.json     <span style="color:var(--ink-4);"># base, train, dev, test, 3 curriculum</span>
+├── db.json              <span style="color:var(--ink-4);"># initial DB state</span>
+└── policy.md            <span style="color:var(--ink-4);"># ~30 pages, the wiki</span></pre>
+
+      <h3 class="subhead">Multi-actor user simulator (Dec-POMDP, extended)</h3>
+      <p style="font-size: 10pt; color: var(--ink-3); margin: 0;">
+        Three personas: <strong>customer</strong> (4 tools: provide_info, accept and refuse_substitute, terminate), <strong>driver</strong> (update_location, mark_pickup, mark_delivered, report_issue), <strong>restaurant</strong> (mark_received, mark_prep_started, mark_oos, mark_ready). All act on shared env state. Each persona × 4 strategies (cooperative, adversarial, realistic, impatient) gives 12 simulator configurations per task.
+      </p>
+
+    </div>
+
+    <div>
+      <h3 class="subhead">Component sizing vs τ³ retail</h3>
+      <table style="font-size:10pt;">
+        <thead>
+          <tr>
+            <th style="width:50%;">Component</th>
+            <th class="num" style="width:25%;letter-spacing:0.04em;">Food Delivery v1</th>
+            <th class="num" style="width:25%;letter-spacing:0.04em;">τ³ retail</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Data tables</td><td class="num">11</td><td class="num">3</td></tr>
+          <tr><td>Agent tools (13 read + 7 write + 4 escalation)</td><td class="num">24</td><td class="num">16</td></tr>
+          <tr><td>User tools (3 personas × 4)</td><td class="num">12</td><td class="num">0</td></tr>
+          <tr><td>Initial DB: restaurants/drivers/customers/items</td><td class="num">50/80/200/500</td><td class="num">n/a</td></tr>
+          <tr class="subtotal"><td>Hand-crafted seed tasks</td><td class="num">200</td><td class="num">~107</td></tr>
+          <tr class="subtotal"><td>Compositionally generated tasks</td><td class="num">3,000</td><td class="num">n/a</td></tr>
+          <tr class="total"><td>Total tasks shipped at v1</td><td class="num">3,200</td><td class="num">~107</td></tr>
+          <tr><td>Process reward checkpoints (avg / task)</td><td class="num">5</td><td class="num">0</td></tr>
+          <tr><td>Splits (base, train, dev, test, 3 curriculum)</td><td class="num">7</td><td class="num">3</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size: 9.5pt; color: var(--ink-3); margin-top: 2mm; font-style: italic;">
+        Volume anchors. the Manufacturing extension released 50 tasks. SWE-bench Verified ships 500. GAIA ships 466. Mind2Web 2 ships 130 at 1,000+ human-hours. MUA-RL trained against 165 tau-bench tasks (115 retail + 50 airline) and lifted retail Pass^1 to 67%. We ship 200 hand-crafted seed plus 3,000 generated to give RL training the per-bucket density (250-400 trajectories per priority bucket) that public eval sets do not.
+      </p>
+    </div>
+  </div>
+
+  <div class="source">
+    <span>Tool counts verified against <code>tau_bench/envs/retail/tools/__init__.py</code>; domain spec in <code>artifacts/02_domain_spec.md</code>; sample tools in <code>03_sample_tools.py</code></span>
+    <span>07 / 12</span>
+  </div>
+</section>
+
+<!-- S8 REWARD -->
+<section class="slide" id="s8">
+  <div class="head">
+    <span class="kicker">The differentiator</span>
+    <span class="pagenum">08 <span>/ 12</span></span>
+  </div>
+
+  <h1 class="action">
+    Base τ³ reward is binary 0/1, fine for eval, wrong for RL.
+    <em>Four targeted upgrades</em> close the failure modes food delivery surfaces.
+  </h1>
+
+  <div class="split weighted-l" style="flex: 1;">
+    <div style="display:flex;flex-direction:column;gap:3mm;">
+      <div class="cards cols-2" style="gap:3mm;">
+        <div class="card">
+          <div class="label">1 · equivalence-class hashing</div>
+          <div class="name">Stochastic outcomes don't break reward.</div>
+          <p>Driver assignment is non-deterministic; any driver in the valid candidate pool is correct. Canonical hashing on candidate-set projection succeeds where strict equality fails. <strong>~10 LOC</strong>, buckets 5, 6, 10.</p>
+        </div>
+        <div class="card">
+          <div class="label">2 · safety-gate hard rules</div>
+          <div class="name">Allergen violation hard-zeros the episode.</div>
+          <p>Some violations cannot be recovered. Pre-check predicate runs against the trajectory; if violated, reward = 0 unconditionally. <strong>~30 LOC + DSL</strong>, buckets 7, 9, 12.</p>
+        </div>
+        <div class="card">
+          <div class="label">3 · monetary-identity invariant</div>
+          <div class="name"><code>refunds + credits + replacement = disputed</code></div>
+          <p>A refund scenario has many valid resolutions. Reward checks the identity, not one specific ledger pattern. With <code>hard_zero_if_above</code>, "Can your AI say no?" becomes trainable in one signal. <strong>~25 LOC</strong>, buckets 3, 7, 8, 11.</p>
+        </div>
+        <div class="card">
+          <div class="label">4 · dense process reward</div>
+          <div class="name">Per-checkpoint partial credit unlocks RL.</div>
+          <p>Sparse 0/1 is hard credit-assignment. Each task ships ~5 checkpoint predicates with weights. The lab trains on outcome, process, or any custom blend. <strong>~50 LOC + DSL, 100× signal density</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h3 class="subhead">Upgrade 2 in code, the allergen safety gate</h3>
+<pre class="code-block" style="font-size:8.2pt;"><span class="file">tau2/domains/food_delivery/reward.py (excerpt)</span><span class="kw">def</span> _safety_gate_passed(self) -> bool:
+    gates = self.task.reward_overrides.get(<span class="str">"safety_gate"</span>, [])
+    <span class="kw">for</span> gate <span class="kw">in</span> gates:
+        <span class="kw">if</span> gate[<span class="str">"kind"</span>] == <span class="str">"no_allergen_substitute"</span>:
+            cust = self.data[<span class="str">"customers"</span>][self.task.customer_id]
+            allergens = set(cust[<span class="str">"allergens_hard_flag"</span>])
+            <span class="kw">for</span> call <span class="kw">in</span> self.actions:
+                <span class="kw">if</span> call.name == <span class="str">"request_substitute"</span>:
+                    sub = self.data[<span class="str">"menus"</span>][(
+                        call.kwargs[<span class="str">"restaurant_id"</span>],
+                        call.kwargs[<span class="str">"substitute_item_id"</span>])]
+                    <span class="kw">if</span> set(sub[<span class="str">"allergens"</span>]) &amp; allergens:
+                        <span class="kw">return</span> False    <span class="cmt"># hard-zero</span>
+    <span class="kw">return</span> True</pre>
+      <p style="font-size: 9.5pt; color: var(--ink-3); margin-top: 3mm; line-height: 1.45;">
+        Composed in <code>calculate_reward_shaped()</code> as
+        <code>safety × (outcome + 0.3·process) × monetary</code>.
+        AReaL-SEA validated this style of verifier-based shaping: per-instance verifiers in tau²-bench drove Pass^1 from baseline to 75% retail and 98% telecom. Allergen safety, refund accounting, and policy compliance are
+        <strong>responsible-AI primitives built into reward, not bolted on</strong>: matches the standard "data privacy, bias mitigation, model monitoring, human-in-the-loop workflows."
+      </p>
+    </div>
+  </div>
+
+  <div class="source">
+    <span>Base reward implementation in <code>tau_bench/envs/base.py::Env.calculate_reward</code>; full upgrade design in <code>artifacts/05_reward_design.md</code></span>
+    <span>08 / 12</span>
+  </div>
+</section>
+
+<!-- S9 PLAN -->
+<section class="slide" id="s9">
+  <div class="head">
+    <span class="kicker">16-week plan · weekly cadence from W4</span>
+    <span class="pagenum">09 <span>/ 12</span></span>
+  </div>
+
+  <h1 class="action">
+    First integratable slice in <em>week 4</em>; weekly increments keep us calibrated to a moving model target.
+  </h1>
+
+  <div class="timeline">
+    <div class="timeline-phase">
+      <div class="week">W1,2</div>
+      <div class="label">Scope &amp; gap analysis</div>
+      <ul class="bullets">
+        <li>Decision tree v1</li>
+        <li>50-task probe</li>
+        <li>Bucket-level reward gap</li>
+        <li>Hiring funnel started</li>
+      </ul>
+    </div>
+    <div class="timeline-phase shipping">
+      <div class="week">W3,4</div>
+      <div class="label">Domain skeleton, 1st slice ships</div>
+      <ul class="bullets">
+        <li>data_model + 24 tools</li>
+        <li>policy.md v1</li>
+        <li>50 hand-crafted tasks</li>
+        <li><strong>Consuming lab begins grading</strong></li>
+      </ul>
+    </div>
+    <div class="timeline-phase shipping">
+      <div class="week">W5,8</div>
+      <div class="label">Bucket coverage, weekly slices</div>
+      <ul class="bullets">
+        <li>3-persona user simulator</li>
+        <li>All 4 reward overrides live</li>
+        <li>200 hand-crafted tasks</li>
+        <li>4 review checkpoints</li>
+      </ul>
+    </div>
+    <div class="timeline-phase shipping">
+      <div class="week">W9,12</div>
+      <div class="label">Compositional + scale</div>
+      <ul class="bullets">
+        <li>Generator yield ~70%</li>
+        <li>+2,100 generated tasks</li>
+        <li>Telemetry / fraud live</li>
+        <li>Process checkpoints attached</li>
+      </ul>
+    </div>
+    <div class="timeline-phase shipping">
+      <div class="week">W13,14</div>
+      <div class="label">Reward calibration</div>
+      <ul class="bullets">
+        <li>Difficulty re-weighted to ~50% pass</li>
+        <li>LLM-judge audit (1% sample)</li>
+        <li>Curriculum splits scored</li>
+        <li>3,000 task target hit</li>
+      </ul>
+    </div>
+    <div class="timeline-phase shipping">
+      <div class="week">W15,16</div>
+      <div class="label">Freeze, ship, retro</div>
+      <ul class="bullets">
+        <li>Final QA pass</li>
+        <li>Splits + signoff</li>
+        <li>Leaderboard submission</li>
+        <li>Domain-2 starter extracted</li>
+      </ul>
+    </div>
+  </div>
+
+  <p style="font-size: 9.5pt; color: var(--ink-4); margin: 1.5mm auto 0 auto; font-style: italic; width: 100%; text-align: center;">
+    Column widths scale to weeks; highlighted phases ship to the consuming lab every week
+  </p>
+
+  <div class="kpi-row">
+    <div class="kpi"><div class="lbl">First slice</div><div class="val">W4<span class="unit">/ 16</span></div><div class="sub">~50 tasks for pipeline integration; consuming lab begins reviewing.</div></div>
+    <div class="kpi"><div class="lbl">Review checkpoints</div><div class="val">13</div><div class="sub">Weekly slice review from W4 onward.</div></div>
+    <div class="kpi"><div class="lbl">Tasks at v1</div><div class="val">3,200</div><div class="sub">200 hand-crafted + 3,000 generated.</div></div>
+    <div class="kpi"><div class="lbl">Bucket coverage</div><div class="val">12 / 12</div><div class="sub">All shipped by W8; densified W9 to W14.</div></div>
+  </div>
+
+  <div class="source">
+    <span>Week-by-week deliverables, owners, and risk gates: <code>artifacts/07_phased_plan.md</code></span>
+    <span>09 / 12</span>
+  </div>
+</section>
+
+<!-- S10 RESOURCING -->
+<section class="slide" id="s10">
+  <div class="head">
+    <span class="kicker">Resourcing</span>
+    <span class="pagenum">10 <span>/ 12</span></span>
+  </div>
+
+  <h1 class="action">
+    Small core, tiered contractor pyramid. ~50% of v1 infrastructure carries to domain&nbsp;2 and <em>climbs to ~65% by domain 3</em> once abstractions stabilise.
+  </h1>
+
+  <div class="split weighted-l">
+    <div>
+      <h3 class="subhead">Org pyramid (peaks W9 to W12)</h3>
+      <div class="pyramid">
+        <div class="tier fte">
+          <span class="tname">FTE</span>
+          <span class="role">Program Director, Project Mgr, Domain Architect, QA &amp; Methodology lead</span>
+          <span class="rate">core team</span>
+          <span class="count">4</span>
+        </div>
+        <div class="tier">
+          <span class="tname">T1</span>
+          <span class="role">Domain experts: ex-DoorDash / Uber-Eats ops PM, ex-restaurant ops director</span>
+          <span class="rate">$120 / hr</span>
+          <span class="count">4</span>
+        </div>
+        <div class="tier">
+          <span class="tname">T2</span>
+          <span class="role">Senior SWE / data eng: env, generator, telemetry, grader regression</span>
+          <span class="rate">$80 / hr</span>
+          <span class="count">4</span>
+        </div>
+        <div class="tier">
+          <span class="tname">T3</span>
+          <span class="role">Trajectory writers: author tasks, run rollouts, self-check</span>
+          <span class="rate">$30 / hr</span>
+          <span class="count">~50</span>
+        </div>
+        <div class="tier">
+          <span class="tname">T4</span>
+          <span class="role">Reviewers: paste-detection, fraud audit, replay verification</span>
+          <span class="rate">$15 / hr</span>
+          <span class="count">~25</span>
+        </div>
+      </div>
+
+      <p style="font-size: 9.5pt; color: var(--ink-3); margin-top: 3.5mm; font-style: italic;">
+        Rates anchored to public labeling-platform rate cards ($30 to $90/hr) and Mercor comparables (avg $95/hr, specialised up to $300/hr). Internal headcount stays flat; the pyramid scales horizontally per program.
+      </p>
+    </div>
+
+    <div>
+      <h3 class="subhead">What carries across domains 2..N</h3>
+      <table>
+        <thead><tr><th>Reusable infrastructure</th><th class="num">Reuse target</th></tr></thead>
+        <tbody>
+          <tr><td>Compositional generator framework (orchestrator + verifier DSL); per-domain atomic libraries are new</td><td class="num">70%</td></tr>
+          <tr><td>User-simulator framework + telemetry</td><td class="num">85%</td></tr>
+          <tr><td>Grader regression suite tooling; per-domain golden trajectories are new</td><td class="num">80%</td></tr>
+          <tr><td>Behavioural fraud / paste-detection pipeline</td><td class="num">100%</td></tr>
+          <tr><td>Hiring funnel templates and rate cards</td><td class="num">90%</td></tr>
+          <tr><td>Two-sided-marketplace VRN pattern</td><td class="num">if applicable</td></tr>
+          <tr><td>Curriculum / difficulty annotation schema</td><td class="num">100%</td></tr>
+          <tr class="total"><td>Weighted average, domain 2 (8 weeks)</td><td class="num">~50%</td></tr>
+          <tr class="total"><td>Weighted average, domain 3+ as abstractions stabilise</td><td class="num">~65%</td></tr>
+        </tbody>
+      </table>
+
+      <h3 class="subhead" style="margin-top: 3mm;">What's per-domain new work</h3>
+      <ul class="bullets" style="font-size: 9.5pt; line-height: 1.35;">
+        <li><code>data_model.py</code>, <code>tools.py</code>, <code>policy.md</code>, plus the per-domain atomic action library for the generator</li>
+        <li>~150 hand-crafted seed tasks plus new T1 vertical-specific domain experts</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="source">
+    <span>Hiring funnel mechanics, calibration costs, and rate-card sourcing: <code>artifacts/06_cost_model.md</code></span>
+    <span>10 / 12</span>
+  </div>
+</section>
+
+<!-- S11 OPS -->
+<section class="slide" id="s11">
+  <div class="head">
+    <span class="kicker">The heart · production scale</span>
+    <span class="pagenum">11 <span>/ 12</span></span>
+  </div>
+
+  <h1 class="action">
+    Eleven scale risks, each with a <em>named mechanism</em>. The brief asks specifically about this layer; the highlighted three carry the largest weekly variance in $/task and quality.
+  </h1>
+
+  <table class="risks" style="font-size: 9.5pt;">
+    <thead>
+      <tr>
+        <th style="width: 26%;">Risk</th>
+        <th style="width: 74%;">Named mechanism</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="spot"><td>Throughput cap above ~1,000 tasks</td><td>Compositional generator scales easy buckets; hand-craft only what the generator cannot cover; parallel cells with isolated DBs.</td></tr>
+      <tr class="spot"><td>Margin erosion under deadline pressure</td><td>Every step routes to cheapest viable tier. T1 at design + sampled QA only. Weekly $/task by-bucket dashboard. Kill buckets that won't hit margin.</td></tr>
+      <tr class="spot"><td>Reward function correctness, the grader is the bottleneck</td><td>Grader regression suite of 350 trajectories: 200 known-good, 100 known-bad, 50 boundary edges. CI gate on every grader change. LLM-judge audit on 1% of new tasks.</td></tr>
+      <tr><td>Quality drift at scale</td><td>10% double-grading sample, golden-task probes (10/week per writer), per-writer pass-rate tracking, weekly calibration.</td></tr>
+      <tr><td>AI leakage / fraud</td><td>Behavioural telemetry: paste timing, mouse, keystroke cadence, honeypot tasks, group-fraud detection (flag, gather, ban as cluster).</td></tr>
+      <tr><td>Hiring 50 T3 writers fast</td><td>AI work-sample test (3 trajectories auto-graded), human pair-review on first 5 paid tasks, ~12% target conversion through the funnel, ~$15K funnel cost.</td></tr>
+      <tr><td>Trajectory diversity</td><td>Persona × strategy matrix forced (3 × 4). Compositional generator parameterised for context randomness. Edit-distance distribution monitored weekly.</td></tr>
+      <tr><td>Consuming-lab researcher translation</td><td>PD owns translation. Written one-pager spec per bucket signed off W2. Weekly slice review forces specification refinement.</td></tr>
+      <tr><td>No room for mistakes (top labs QA via competitors)</td><td>Triple-check: deterministic grader + internal LLM-grader + 1% human audit. Audit trail per task.</td></tr>
+      <tr><td>Annotator burnout, domain expertise gap</td><td>Bonus tied to grader-pass-rate. T3 to T1 promotion path. T1 hires from real food-ops orgs; policy.md authored by them, not LLMs.</td></tr>
+      <tr><td>Dataset quality measurement</td><td>Four metrics shipped weekly: bucket-coverage entropy, edit-distance diversity, difficulty calibration (per-bucket pass-rate vs target), grader-judge agreement (Cohen's κ).</td></tr>
+    </tbody>
+  </table>
+
+  <div class="source">
+    <span>Each row maps to a specific mechanism; expanded in <code>artifacts/07_phased_plan.md</code></span>
+    <span>11 / 12</span>
+  </div>
+</section>
+
+<!-- S12 CLOSE / COMPETITIVE -->
+<section class="slide" id="s12">
+  <div class="head">
+    <span class="kicker">Close · why this proposal differs from how others would approach the brief</span>
+    <span class="pagenum">12 <span>/ 12</span></span>
+  </div>
+
+  <h1 class="action">
+    Scale ships volume. Surge ships expert review. Mercor ships sourcing.
+    <em>We ship a τ³-shaped RL gym</em> with reward upgrades, a multi-actor simulator, and infrastructure that carries to the next domain.
+  </h1>
+
+  <div class="split weighted-r" style="margin-top: 2mm;">
+    <div>
+      <h3 class="subhead">How approaches differ on the same brief</h3>
+      <table class="compete" style="font-size:9.2pt;">
+        <thead>
+          <tr><th style="width:14%;">Vendor</th><th style="width:50%;">Default approach</th><th style="width:36%;">Gap on the RL-data ask</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Scale</strong></td><td>Vertical-scale annotation; major footprint in defence Gen-AI (Donovan, $300M+ DoD).</td><td>Eval-shaped task labels and SFT pipelines, less custom env / verifier-reward work.</td></tr>
+          <tr><td><strong>Surge</strong></td><td>Smaller, higher-quality expert pool; deep human review for RLHF preference labels (Anthropic RLHF customer; ~$1.2B ARR).</td><td>Per-task cost stays high; harder to scale via compositional generation.</td></tr>
+          <tr><td><strong>Mercor</strong></td><td>Domain-expert sourcing first; APEX-Agents 480-task benchmark across corporate-law, IB, consulting tasks ($1B revenue, $10B valuation).</td><td>Methodology and tooling stitched per program; less reusable infra across domains.</td></tr>
+          <tr><td><strong>Invisible</strong></td><td>Workflow-automation tooling and human-feedback ops (Cohere Command-A case study; $2B valuation).</td><td>Less specialised on agentic env / verifier-reward design.</td></tr>
+          <tr class="us"><td><strong>This proposal</strong></td><td>τ³-shaped RL gym; four reward upgrades; multi-actor simulator; compositional generator; dataset-quality KPIs; infra reusable across domains.</td><td>Covers the gap above and adds the marketplace primitives.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <h3 class="subhead">Two original moves that compound</h3>
+      <div class="card" style="margin-bottom: 2.5mm;">
+        <div class="label">1 · Virtual Restaurant Network (VRN)</div>
+        <div class="name">Persistent two-sided marketplace simulator with shared schema across vertical domains.</div>
+        <p style="font-size:9.5pt;line-height:1.4;">50 fictional restaurants, 80 drivers, 200 customers; menus, prep-time profiles, capacity rules. The schema (supplier × courier × consumer × pricing engine) is the abstraction; swap restaurants for clinics, sellers, or technicians and the same generator and simulator produce ride-share, healthcare-scheduling, marketplace, or field-service trajectories.</p>
+      </div>
+      <div class="card">
+        <div class="label">2 · Difficulty-annotated curriculum splits</div>
+        <div class="name">The consuming lab trains curriculum-RL out of the box.</div>
+        <p style="font-size:9.5pt;line-height:1.4;">Every task tagged: <code>difficulty</code>, <code>multi_step_depth</code>, <code>recovery_required</code>, <code>multi_party</code>. Adds minutes per task; differentiates from flat datasets at near-zero marginal cost.</p>
+      </div>
+
+      <div class="darkbox" style="margin-top: 4mm; padding: 2.5mm 3.5mm;">
+        <strong style="font-size:10pt;">Reliability is not the same problem as intelligence.</strong>
+        <span style="font-size:9pt;">the public frame for tau-bench. The data we build is what closes that gap; the playbook makes the next domain cheaper than this one.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="source">
+    <span>Methodology and 7 supporting artefacts (decision tree, domain spec, sample tools, sample tasks, reward design, cost model, phased plan) accompany this deck</span>
+    <span>12 / 12</span>
+  </div>
+</section>
+
+</div>
+
+<script>
+if (new URLSearchParams(location.search).has('print')) {
+  document.body.classList.add('print-mode');
+}
+document.addEventListener('keydown', (e) => {
+  const slides = [...document.querySelectorAll('.slide')];
+  const cur = slides.findIndex(s => {
+    const r = s.getBoundingClientRect();
+    return r.top >= -100 && r.top < window.innerHeight / 2;
+  });
+  if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+    if (cur < slides.length - 1) slides[cur + 1].scrollIntoView({behavior: 'smooth'});
+    e.preventDefault();
+  }
+  if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+    if (cur > 0) slides[cur - 1].scrollIntoView({behavior: 'smooth'});
+    e.preventDefault();
+  }
+});
+</script>
+</body>
+</html>

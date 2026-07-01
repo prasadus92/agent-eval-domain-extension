@@ -126,7 +126,7 @@
 ## Phase 6+, Continuous expansion + Domain 2 starter (W17+)
 
 Two parallel tracks:
-- **Track A**, Continuous food-delivery expansion: add buckets the the consuming lab identifies via post-v1 model evals; expand task volume on under-served buckets; voice modality if requested.
+- **Track A**, Continuous food-delivery expansion: add buckets identified via post-v1 model evals; expand task volume on under-served buckets; voice modality if requested.
 - **Track B**, Domain 2 starter: extract reusable infra from food-delivery, set up the next domain's skeleton. Estimated 8 weeks to v1 of domain 2.
 
 Track B uses the same FTE pool with new T1 experts contracted-in for the new vertical. T2 engineering needs only 1 person for adapter work because the infra is reusable.
@@ -138,13 +138,13 @@ Track B uses the same FTE pool with new T1 experts contracted-in for the new ver
 | Phase exit | Re-evaluate | If off-target, what we do |
 |---|---|---|
 | W2 | Hiring funnel velocity | If T3 sourcing is below 50/week, extend funnel into W3 + start T1 sourcing earlier |
-| W4 | First-slice consuming-lab feedback | If the lab wants different buckets prioritized, swap; cost re-projection |
+| W4 | First-slice feedback | If different buckets should be prioritized, swap and re-plan the remaining weeks |
 | W8 | Hand-crafted authoring rate | If we're behind 200, ship 150 + 3,200 generated instead |
 | W12 | Generator yield | If yield <60%, pause generation, retune. If >75%, increase target volume |
 | W14 | Calibration | If average pass-rate is <30% or >70%, recalibrate difficulty weights |
-| W16 | Final handoff | If consuming-lab signoff slips, contractual freeze on scope while resolving |
+| W16 | Final handoff | If signoff slips, freeze scope while resolving rather than adding new work |
 
-The plan is opinionated about **what's fixed and what's flexible**. Quality bar and weekly cadence are fixed. Volume target is flexible. Deadline is fixed. Margin is the variable we protect.
+The plan is opinionated about **what's fixed and what's flexible**. Quality bar and weekly cadence are fixed. Volume target is flexible. The timeline is the anchor; task volume flexes to protect the quality bar.
 
 ---
 
@@ -154,7 +154,7 @@ The plan is opinionated about **what's fixed and what's flexible**. Quality bar 
 |---|---|---|
 | Consuming-lab researcher | Weekly | Slice review call (30 min) + async dataset diff |
 | Consuming-lab technical contact | Bi-weekly | Status doc, quality KPIs |
-| Program sponsor | Weekly | 1:1 status, escalations, margin tracker |
+| Program sponsor | Weekly | 1:1 status, escalations, progress tracker |
 | Core team | Daily standup | 15 min |
 | T1/T2/T3/T4 contractor leads | Weekly per tier | 30 min calibration call |
 | All-hands (program team) | Bi-weekly | 45 min, covers KPI review, blocker escalation |
